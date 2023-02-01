@@ -4,8 +4,8 @@
 # LICENSE file in the root directory of this source tree.
 
 import sys
-# sys.path.append("/home/yomia/yizhu1/yizhu1_moe/fairseq")
-print(sys.path)
+sys.path.append("/home/quzha/yizhu1/moe_llm/fairseq")
+# print(sys.path)
 from examples.simultaneous_translation.utils.latency import LatencyTraining
 from fairseq.criterions import register_criterion
 from fairseq.criterions.label_smoothed_cross_entropy import (
