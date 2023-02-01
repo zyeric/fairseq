@@ -44,7 +44,10 @@ def fsdp_wrap_expert(args, layer, min_num_params=0):
     # Wrap MoE layer with FSDP using a process group with all replicated ranks
     process_group = layer.moe_layer.expert_group
     world_size = dist_utils.get_data_parallel_world_size()
-    pg_size = process_group.size()
+    if process_group is None:
+        pg_size = 1
+    else:
+        pg_size = process_group.size()
     num_experts = world_size/pg_size
 
     for i, expert in enumerate(layer.moe_layer.experts):

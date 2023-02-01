@@ -139,6 +139,17 @@ def main(cfg: FairseqConfig):
     # Setup task, e.g., translation
     task = tasks.setup_task(cfg.task)
 
+    model_overrides = eval(cfg.common_eval.model_overrides)
+    is_base_moe = model_overrides.get('is_base_moe', False)
+    if cfg.common_eval.is_moe or is_base_moe:
+        rank = distributed_utils.get_data_parallel_rank()
+        cfg.checkpoint.checkpoint_suffix = f"-rank-{rank}"
+        is_moe = True
+        # This is required for making all_to_all work on same sized tensors across gpus.
+        cfg['task']['pad_to_fixed_length'] = True
+    else:
+        is_moe = False
+
     # Load ensemble
     overrides = ast.literal_eval(cfg.common_eval.model_overrides)
     logger.info("loading model(s) from {}".format(cfg.common_eval.path))
@@ -149,6 +160,7 @@ def main(cfg: FairseqConfig):
         suffix=cfg.checkpoint.checkpoint_suffix,
         strict=(cfg.checkpoint.checkpoint_shard_count == 1),
         num_shards=cfg.checkpoint.checkpoint_shard_count,
+        is_moe=is_moe or is_base_moe,
     )
 
     # Set dictionaries
